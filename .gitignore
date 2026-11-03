@@ -36,5 +36,7 @@ skills/*
 !skills/planner-onboarding/**
 !skills/skills-updater
 !skills/skills-updater/**
+!skills/setup-copilot-t3
+!skills/setup-copilot-t3/**
 commands/
 
