@@ -18,10 +18,10 @@ def send_telegram_confirmation(period: str, resend_response: dict | None) -> Non
 
     resend_id = resend_response.get("id") if isinstance(resend_response, dict) else None
     message = (
-        "Accomplishment Report emailed for review.\n\n"
+        "Accomplishment Report draft sent to your email for review.\n\n"
         f"Period: {period}\n"
-        f"Sent to: {REVIEWER_EMAIL}\n"
-        f"Instruction: Please review and cosign first, then send the finalized copy back to {REPORT_OWNER_EMAIL} for upload."
+        f"Sent to: {REPORT_OWNER_EMAIL}\n"
+        f"Next step: Review the PDF and Excel. If good, forward the PDF to {REVIEWER_EMAIL} ({REVIEWER_NAME}) for cosigning."
     )
     if resend_id:
         message += f"\nResend ID: {resend_id}"
@@ -36,28 +36,27 @@ def send_telegram_confirmation(period: str, resend_response: dict | None) -> Non
         print(f"telegram_confirmation_failed error={error}", flush=True)
 
 
-def send_report_email(api_key: str, pdf_bytes: bytes, period: str) -> None:
+def send_report_email(api_key: str, pdf_bytes: bytes, period: str, docx_bytes: bytes | None = None) -> None:
     resend.api_key = api_key
 
-    filename = f"AR - Silva, Matthew Jericho - {period}.pdf"
+    base_filename = f"AR - Silva, Matthew Jericho - {period}"
+    attachments = [{"filename": f"{base_filename}.pdf", "content": list(pdf_bytes)}]
+    if docx_bytes is not None:
+        attachments.append({"filename": f"{base_filename}.docx", "content": list(docx_bytes)})
+
     response = resend.Emails.send({
         "from": SENDER,
-        "to": [REVIEWER_EMAIL],
-        "reply_to": [REPORT_OWNER_EMAIL],
-        "subject": f"Accomplishment Report for Review and Cosign - {period}",
+        "to": [REPORT_OWNER_EMAIL],
+        "subject": f"AR Draft Ready for Review - {period}",
         "text": (
-            f"Good day {REVIEWER_NAME},\n\n"
-            f"Please find attached the Accomplishment Report of {REPORT_OWNER_NAME} for the period of {period}.\n\n"
-            "Kindly review and cosign the report first. Once signed, please send the finalized copy "
-            f"back to {REPORT_OWNER_NAME} at {REPORT_OWNER_EMAIL} so he can upload it to the required system.\n\n"
-            "Thank you.\n\n"
+            f"Hi {REPORT_OWNER_NAME},\n\n"
+            f"Your Accomplishment Report draft for {period} is ready.\n\n"
+            "Attached:\n"
+            f"- {base_filename}.pdf — the generated report\n"
+            + (f"- {base_filename}.docx — editable Word document if you need to make changes (opens in Google Docs)\n" if docx_bytes else "")
+            + f"\nOnce you're happy with it, forward the PDF to {REVIEWER_NAME} ({REVIEWER_EMAIL}) for review and cosigning.\n\n"
             "This was generated automatically."
         ),
-        "attachments": [
-            {
-                "filename": filename,
-                "content": list(pdf_bytes),
-            }
-        ],
+        "attachments": attachments,
     })
     send_telegram_confirmation(period, response)

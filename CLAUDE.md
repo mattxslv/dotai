@@ -79,8 +79,8 @@ Automatically groups today's commits by feature and posts them as closed GitLab 
 ## Tracked projects (hardcoded in main.py)
 | Project | GitHub repo | GitLab project ID |
 |---|---|---|
-| PEMEDES | `deadPixel505/pemedes-local` | `81356854` (dictcloud/pemedes) |
-| DTAP | `renzvalentino/DTAP` | `81354540` |
+| PEMEDES | `mattxslv/pemedes` | `81356854` (dictcloud/pemedes) |
+| DTAP | `mattxslv/dtap` | `81354540` |
 | Startup PH | `mattxslv/startup-ph` | `81533201` |
 
 To add a new project, add an entry to the `PROJECTS` list in `~/.claude/gitlab-daily/main.py` and rebuild the Docker image.

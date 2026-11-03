@@ -13,12 +13,12 @@ GITHUB_AUTHOR = os.environ.get("GITHUB_AUTHOR", "mattxslv")
 PROJECTS = [
     {
         "name": "PEMEDES",
-        "github_repo": os.environ.get("GITHUB_REPO_PEMEDES", "deadPixel505/pemedes-local"),
+        "github_repo": os.environ.get("GITHUB_REPO_PEMEDES", "mattxslv/pemedes"),
         "gitlab_project_id": os.environ.get("GITLAB_PROJECT_ID_PEMEDES", "81356854"),
     },
     {
         "name": "DTAP",
-        "github_repo": os.environ.get("GITHUB_REPO_DTAP", "renzvalentino/DTAP"),
+        "github_repo": os.environ.get("GITHUB_REPO_DTAP", "mattxslv/dtap"),
         "gitlab_project_id": os.environ.get("GITLAB_PROJECT_ID_DTAP", "81354540"),
     },
     {

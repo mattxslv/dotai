@@ -57,7 +57,7 @@ Linux example with `jq`. It writes in place, so file permissions are kept:
 
 ```bash
 F="$T3_HOME/userdata/settings.json"; cp -p "$F" "$F.bak-copilot"
-jq --arg cmd "$(readlink -f "$(command -v copilot)")" '.providerInstances = ((.providerInstances // {}) + {"github-copilot": {"driver":"acpRegistry","displayName":"GitHub Copilot","enabled":true,"config":{"source":"local","commandPath":$cmd,"commandArgs":["--acp"]}}})' "$F" > "$F.tmp" && cat "$F.tmp" > "$F" && rm "$F.tmp"
+jq --arg cmd "$(command -v copilot)" '.providerInstances = ((.providerInstances // {}) + {"github-copilot": {"driver":"acpRegistry","displayName":"GitHub Copilot","enabled":true,"config":{"source":"local","commandPath":$cmd,"commandArgs":["--acp"]}}})' "$F" > "$F.tmp" && cat "$F.tmp" > "$F" && rm "$F.tmp"
 ```
 
 Edit the file rather than using **Settings → Providers → + Add provider**. The form cannot set `commandArgs`.
