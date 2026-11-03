@@ -6,7 +6,7 @@ user-invocable: true
 
 # Set up GitHub Copilot in T3 Code
 
-T3 Code runs Copilot through its ACP Registry provider (`driver: acpRegistry`, agent `github-copilot-cli`).
+T3 Code runs Copilot through its ACP provider (`driver: acpRegistry`), launching the installed CLI as `copilot --acp`.
 Copilot runs on the machine T3 runs on, so every machine needs its own install and login. Never copy auth files between machines.
 
 ## 1. Check Copilot CLI
@@ -40,28 +40,27 @@ Back up `settings.json` first. Then merge this key into the existing JSON object
     "displayName": "GitHub Copilot",
     "enabled": true,
     "config": {
-      "source": "registry",
-      "agentId": "github-copilot-cli",
-      "commandPath": "<absolute path from step 1>"
+      "source": "local",
+      "commandPath": "<absolute path from step 1>",
+      "commandArgs": ["--acp"]
     }
   }
 }
 ```
 
 - If `providerInstances` already exists, add `github-copilot` beside the existing entries.
-- `commandPath` is optional. Without it, T3 downloads Copilot through `npx`.
-- Keep `"source": "registry"`. The `"local"` source does not pass the `--acp` flag Copilot needs, and the settings form cannot add it.
+- Use `"source": "local"` with `"commandArgs": ["--acp"]`. The settings form hides `commandArgs`, so set it in the file.
+- Avoid `"source": "registry"` (agent `github-copilot-cli`). It only works after T3 has cached the ACP Registry index. Otherwise it fails with "No valid cached ACP Registry index is available."
 - Codex and Claude are default providers. Adding this entry does not remove them.
 
 Linux example with `jq`. It writes in place, so file permissions are kept:
 
 ```bash
 F="$T3_HOME/userdata/settings.json"; cp -p "$F" "$F.bak-copilot"
-jq --arg cmd "$(command -v copilot)" '.providerInstances = ((.providerInstances // {}) + {"github-copilot": {"driver":"acpRegistry","displayName":"GitHub Copilot","enabled":true,"config":{"source":"registry","agentId":"github-copilot-cli","commandPath":$cmd}}})' "$F" > "$F.tmp" && cat "$F.tmp" > "$F" && rm "$F.tmp"
+jq --arg cmd "$(readlink -f "$(command -v copilot)")" '.providerInstances = ((.providerInstances // {}) + {"github-copilot": {"driver":"acpRegistry","displayName":"GitHub Copilot","enabled":true,"config":{"source":"local","commandPath":$cmd,"commandArgs":["--acp"]}}})' "$F" > "$F.tmp" && cat "$F.tmp" > "$F" && rm "$F.tmp"
 ```
 
-Instead of editing the file, the user can add it in the app: **Settings → Providers → + Add provider → ACP**.
-Choose source **ACP Registry**, set agent ID `github-copilot-cli`, and put the path in **Executable override**.
+Edit the file rather than using **Settings → Providers → + Add provider**. The form cannot set `commandArgs`.
 
 ## 5. Verify
 
@@ -71,6 +70,7 @@ T3 watches `settings.json` and reloads it while running. A restart is not needed
 - From an agent inside T3: call `orchestrator_capabilities` with `search: "copilot"`. Expect provider `github-copilot`, no constraints, and a non-empty `models` list.
 - Unauthenticated or no models: redo step 2, then refresh the provider.
 - Not listed: check that `settings.json` is valid JSON (`jq . "$F"`), then check `<T3 home>/userdata/logs/server.trace.ndjson` for `AcpRegistry` errors.
+- "No valid cached ACP Registry index": the entry still uses `"source": "registry"`. Switch it to the local config above.
 
 ## Rollback
 
